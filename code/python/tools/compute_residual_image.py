@@ -57,12 +57,14 @@ def save_jpg(filename, img, tonemap="hypersim", valid_mask=None, quality=95):
         target = 0.8
         if valid_mask is None:
             valid_mask = np.ones(img.shape[:2], dtype=bool)
-        brightness = 0.30 * img[..., 0] + 0.59 * img[..., 1] + 0.11 * img[..., 2]
-        brightness = brightness[valid_mask]
-        if brightness.size == 0:
+        luminance = (
+            0.30 * img[..., 0] + 0.59 * img[..., 1] + 0.11 * img[..., 2]
+        )  # CCIR601 coefficients
+        luminance = luminance[valid_mask]
+        if luminance.size == 0:
             scale = 1.0
         else:
-            p = np.percentile(brightness, percentile)
+            p = np.percentile(luminance, percentile)
             scale = 0.0 if p < 1e-4 else target ** (1 / gamma) / p
         img = np.power(scale * img, gamma)
     elif tonemap == "reinhard":
@@ -81,10 +83,13 @@ def print_statistics(color, diffuse_reflectance, diffuse_illumination, residual)
     def stats(name, x):
         print(f"{name}:")
         print(f"  shape = {x.shape}")
+        print(f"  dtype = {x.dtype}") 
         for c, cname in enumerate(channel_names):
             xc = x[..., c]
             print(f"  {cname}:")
-            print(f"    min={xc.min():.6f}  max={xc.max():.6f}  mean={xc.mean():.6f}  std={xc.std():.6f}")
+            print(
+                f"    min={xc.min():.6f}  max={xc.max():.6f}  mean={xc.mean():.6f}  std={xc.std():.6f}"
+            )
             print(
                 "    percentiles = "
                 f"[0% {np.percentile(xc,0):.6f}, "

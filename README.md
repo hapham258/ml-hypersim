@@ -4,9 +4,13 @@ conda create -n hypersim_all python=3.11
 conda activate hypersim_all
 pip install h5py joblib matplotlib pandas scikit-learn scipy tqdm imageio
 ```
-Compute non-diffuse residual:
+Compute non-diffuse residuals and weighting maps:
 ```
-python code/python/tools/compute_residual_image.py --scene_dir /media/hapq/TRAINING_DATA/Hypersim/ai_001_001 --camera cam_00 --output_dir ~/Desktop/hypersim_stuff/Hypersim
+export SCENE_DIR=/media/hapq/TRAINING_DATA/Hypersim/ai_001_001
+export CAMERA_NAME=cam_00
+export OUTPUT_DIR=$HOME/Desktop/hypersim_stuff/Hypersim
+python code/python/tools/compute_residual_image.py --scene_dir $SCENE_DIR --camera $CAMERA_NAME --output_dir $OUTPUT_DIR
+python code/python/tools/compute_weighting_map.py --scene_dir $SCENE_DIR --camera $CAMERA_NAME --output_dir $OUTPUT_DIR
 ```
 
 ![The Hypersim Dataset](docs/teaser_web.jpg "The Hypersim Dataset")
