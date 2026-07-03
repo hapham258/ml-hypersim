@@ -16,3 +16,4 @@ contrib/mikeroberts3000/python/libvrayopenimageio.dylib
 contrib/mikeroberts3000/python/libvrayosl.dylib
 contrib/mikeroberts3000/python/libVRaySDKLibrary.dylib
 contrib/mikeroberts3000/python/plugins
+settings.json

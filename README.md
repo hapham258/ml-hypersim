@@ -1,3 +1,14 @@
+Setup:
+```
+conda create -n hypersim_all python=3.11
+conda activate hypersim_all
+pip install h5py joblib matplotlib pandas scikit-learn scipy tqdm imageio
+```
+Compute non-diffuse residual:
+```
+python code/python/tools/compute_residual_image.py --scene_dir /media/hapq/TRAINING_DATA/Hypersim/ai_001_001 --camera cam_00 --output_dir ~/Desktop/hypersim_stuff/Hypersim
+```
+
 ![The Hypersim Dataset](docs/teaser_web.jpg "The Hypersim Dataset")
 
 # The Hypersim Dataset
