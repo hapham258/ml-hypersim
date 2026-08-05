@@ -68,7 +68,7 @@ def save_jpg(filename, img, tonemap="hypersim", valid_mask=None, quality=95):
             scale = 0.0 if p < 1e-4 else target ** (1 / gamma) / p
         img = np.power(scale * img, gamma)
     elif tonemap == "reinhard":
-        img = tone_map(gamma_correct(img))
+        img = gamma_correct(tone_map(img))
     else:
         raise ValueError(f"Unknown tonemap: {tonemap}")
     img = (np.clip(img, 0.0, 1.0) * 255).astype(np.uint8)

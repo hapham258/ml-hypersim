@@ -4,13 +4,15 @@ conda create -n hypersim_all python=3.11
 conda activate hypersim_all
 pip install h5py joblib matplotlib pandas scikit-learn scipy tqdm imageio
 ```
-Download each subset (`ai_001`, `ai_002`, etc) separately:
+Download and extract each subset (`ai_001`, `ai_002`, etc) separately:
 ```
-python code/python/tools/download_subsets.py --output_dir /media/hapq/TRAINING_DATA/Hypersim --subsets ai_002 ai_003
+export HYPERSIM_DIR=/media/hapq/TRAINING_DATA/Hypersim
+python code/python/tools/download_subsets.py --output_dir $HYPERSIM_DIR --subsets ai_002 ai_003
+python code/python/tools/extract_subsets.py --output_dir $HYPERSIM_DIR --subsets ai_002 ai_003
 ```
 Compute non-diffuse residuals and weighting maps:
 ```
-export SCENE_DIR=/media/hapq/TRAINING_DATA/Hypersim/ai_001_001
+export SCENE_DIR=$HYPERSIM_DIR/ai_001_001
 export CAMERA_NAME=cam_00
 export OUTPUT_DIR=$HOME/Desktop/hypersim_stuff/Hypersim
 python code/python/tools/compute_residual_image.py --scene_dir $SCENE_DIR --camera $CAMERA_NAME --output_dir $OUTPUT_DIR
