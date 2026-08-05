@@ -28,8 +28,23 @@ if __name__ == "__main__":
         if not archives:
             print(f"No archives found for {subset}")
             continue
-        print(f"{subset}: found {len(archives)} archives")
-        for archive in tqdm(archives, desc=f"Extracting {subset}", unit="zip"):
+        archives_to_extract = []
+        for archive in archives:
+            name = os.path.splitext(os.path.basename(archive))[0]
+            output_folder = os.path.join(args.output_dir, name)
+            if os.path.isdir(output_folder):
+                print(f"Skipping {name}: folder already exists")
+                continue
+            archives_to_extract.append(archive)
+        print(
+            f"{subset}: {len(archives_to_extract)}/{len(archives)} archives "
+            f"need extraction"
+        )
+        for archive in tqdm(
+            archives_to_extract,
+            desc=f"Extracting {subset}",
+            unit="zip",
+        ):
             with zipfile.ZipFile(archive, "r") as zf:
                 zf.extractall(args.output_dir)
 
