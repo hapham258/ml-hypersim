@@ -6,6 +6,8 @@ import h5py
 import numpy as np
 from tqdm import tqdm
 import imageio
+import OpenEXR
+import Imath
 
 
 def load_hdf5(filename):
@@ -75,6 +77,29 @@ def save_jpg(filename, img, tonemap="hypersim", valid_mask=None, quality=95):
     imageio.imwrite(filename, img, quality=quality)
 
 
+def save_exr(filename, img):
+    """Save a float16 RGB image as an EXR file."""
+    img = np.asarray(img, dtype=np.float16)
+    height, width, channels = img.shape
+    assert channels == 3
+    header = OpenEXR.Header(width, height)
+    pixel_type = Imath.PixelType(Imath.PixelType.HALF)
+    header["channels"] = {
+        "R": Imath.Channel(pixel_type),
+        "G": Imath.Channel(pixel_type),
+        "B": Imath.Channel(pixel_type),
+    }
+    out = OpenEXR.OutputFile(filename, header)
+    out.writePixels(
+        {
+            "R": img[:, :, 0].tobytes(),
+            "G": img[:, :, 1].tobytes(),
+            "B": img[:, :, 2].tobytes(),
+        }
+    )
+    out.close()
+
+
 def print_statistics(color, diffuse_reflectance, diffuse_illumination, residual):
     """Print statistics for a color/decomposition tuple."""
 
@@ -83,7 +108,7 @@ def print_statistics(color, diffuse_reflectance, diffuse_illumination, residual)
     def stats(name, x):
         print(f"{name}:")
         print(f"  shape = {x.shape}")
-        print(f"  dtype = {x.dtype}") 
+        print(f"  dtype = {x.dtype}")
         for c, cname in enumerate(channel_names):
             xc = x[..., c]
             print(f"  {cname}:")
@@ -114,7 +139,7 @@ def print_statistics(color, diffuse_reflectance, diffuse_illumination, residual)
         )
 
 
-def process_camera(scene_dir, camera, output_dir):
+def process_camera(scene_dir, camera, output_dir, num_imgs=None, seed=None):
     """
     Compute residual = color - diffuse_reflectance * diffuse_illumination.
     """
@@ -134,6 +159,10 @@ def process_camera(scene_dir, camera, output_dir):
     color_files = sorted(glob.glob(os.path.join(input_dir, "*.color.hdf5")))
     print(f"Processing {scene_name} ({camera})")
     print(f"Found {len(color_files)} frames.")
+    if num_imgs is not None and num_imgs < len(color_files):
+        rng = np.random.default_rng(seed)
+        color_files = list(rng.choice(color_files, num_imgs, replace=False))
+        print(f"Randomly selected {len(color_files)} frames.")
 
     #
     for idx, color_file in enumerate(tqdm(color_files)):
@@ -186,6 +215,22 @@ def process_camera(scene_dir, camera, output_dir):
             os.path.join(output_cam_dir, base + ".negative_residual.jpg"),
             negative_residual,
         )
+        save_exr(
+            os.path.join(output_cam_dir, base + ".color.exr"),
+            color,
+        )
+        save_exr(
+            os.path.join(output_cam_dir, base + ".diffuse_reflectance.exr"),
+            diffuse_reflectance,
+        )
+        save_exr(
+            os.path.join(output_cam_dir, base + ".diffuse_illumination.exr"),
+            diffuse_illumination,
+        )
+        save_exr(
+            os.path.join(output_cam_dir, base + ".residual.exr"),
+            residual,
+        )
 
 
 if __name__ == "__main__":
@@ -205,9 +250,23 @@ if __name__ == "__main__":
         required=True,
         help="Root output directory",
     )
+    parser.add_argument(
+        "--num_imgs",
+        type=int,
+        default=10,
+        help="Randomly process only N images. If omitted, process all images.",
+    )
+    parser.add_argument(
+        "--seed",
+        type=int,
+        default=None,
+        help="Random seed for image selection. Default: None.",
+    )
     args = parser.parse_args()
     process_camera(
         scene_dir=args.scene_dir,
         camera=args.camera,
         output_dir=args.output_dir,
+        num_imgs=args.num_imgs,
+        seed=args.seed,
     )

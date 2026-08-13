@@ -2,7 +2,7 @@ Setup:
 ```
 conda create -n hypersim_all python=3.11
 conda activate hypersim_all
-pip install h5py joblib matplotlib pandas scikit-learn scipy tqdm imageio
+pip install h5py joblib matplotlib pandas scikit-learn scipy tqdm imageio OpenEXR Imath
 ```
 Download and extract each subset (`ai_001`, `ai_002`, etc) separately:
 ```
